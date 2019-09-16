@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>devonfw Java Advanced Training</title>
+
+		<link rel="stylesheet" href="assets/css/reset.css">
+		<link rel="stylesheet" href="assets/css/reveal.css">
+		<link rel="stylesheet" href="assets/css/theme/black.css">
+		<link rel="stylesheet" href="assets/css/slides.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="assets/lib/css/monokai.css">
+
+		<link rel="icon" href="favicon.ico">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'assets/css/print/pdf.css' : 'assets/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal training">
+			<div class="slides">
+				<section>
+					<h2><img height="150px" class="no-border no-background" alt="devonfw logo" src="assets/img/devon_logo_white.png"></h2>
+					<h2 class="no-text-transform">Java Advanced</h2>
+				</section>
+				<section>
+					<h2>Agenda</h2>
+					<ul>
+						<li><a href="async.html">Asynchronous</a></li>
+						<li>Non-Blocking I/O</li>
+						<li>Functional</li>
+						<li>Reactive</li>
+					</ul>
+				</section>
+			</div>
+		</div>
+
+		<script src="assets/js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				hash: true,
+				dependencies: [
+					{ src: 'assets/plugin/markdown/marked.js' },
+					{ src: 'assets/plugin/markdown/markdown.js' },
+					{ src: 'assets/plugin/notes/notes.js', async: true },
+					{ src: 'assets/plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>

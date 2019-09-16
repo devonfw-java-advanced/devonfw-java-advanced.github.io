@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>devonfw Java Advanced Training - Asynchronous</title>
+
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/reveal.css">
+    <link rel="stylesheet" href="assets/css/theme/black.css">
+    <link rel="stylesheet" href="assets/css/slides.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="assets/lib/css/monokai.css">
+
+    <link rel="icon" href="favicon.ico">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? 'assets/css/print/pdf.css' : 'assets/css/print/paper.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+</head>
+<body>
+<div class="reveal training">
+    <div class="slides">
+        <section>
+            <h2 class="no-text-transform" style="color: #5382A1">Asynchronous</h2>
+            <h2><img alt="Java logo" style="height: 17rem;" class="no-border no-margin no-background" src="assets/img/java-logo.svg">&nbsp;</h2>
+        </section>
+        <section>
+            <h2>Agenda</h2>
+            <ul>
+                <li>Asynchronous programming in Java</li>
+                <li>Spring's <code class="highlight">@Async</code> annotation</li>
+                <li>Spring's support for the <span class="highlight">Servlet 3.0</span> asynchronous processing</li>
+            </ul>
+        </section>
+        <section>
+            <h1><img alt="Java logo" style="height: 17rem;" class="no-border no-margin no-background" src="assets/img/java-logo.svg">&nbsp;<span style="color: #5382A1">5</span></h1>
+        </section>
+        <section>
+            <h3>Consumer</h3>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Java5AsyncUserService userService = new Java5AsyncUserService();
+Future&lt;User&gt; userFuture = userService.getUser(1234);
+// blocks the main thread, thus...
+User user = userFuture.get();
+// ...user can be printed out here
+System.out.println(user);
+userService.destroy(); // shutdown the thread pool
+					</code></pre>
+        </section>
+        <section>
+            <h3>Producer</h3>
+            <pre><code class="hljs java" data-trim data-line-numbers="5-7">
+class Java5AsyncUserService {
+  private ExecutorService threadPool =
+                Executors.newCachedThreadPool();
+
+  Future&lt;User&gt; getUser(long id) {
+    return threadPool.submit(() -> new User(id, "John"));
+  }
+
+  void destroy() throws InterruptedException {
+    threadPool.shutdown();
+    threadPool.awaitTermination(2, TimeUnit.SECONDS);
+  }
+}
+					</code></pre>
+        </section>
+        <section>
+            <h1><img alt="Java logo" style="height: 17rem;" class="no-border no-margin no-background" src="assets/img/java-logo.svg">&nbsp;<span style="color: #5382A1">8</span></h1>
+        </section>
+        <section>
+            <h3>Consumer</h3>
+            <pre><code class="hljs java" data-trim>
+Java8AsyncUserService userService = new Java8AsyncUserService();
+CompletableFuture&lt;User&gt; userFuture = userService.getUser(1234);
+// for passing user between threads
+AtomicReference&lt;User&gt; user = new AtomicReference<>();
+// does not block the current thread, thus...
+userFuture.thenAccept(user::set);
+System.out.println(user.get()); // ... user is null here
+// shutdown the thread pool and flush all submitted tasks
+userService.destroy();
+System.out.println(user.get()); // user available here
+					</code></pre>
+        </section>
+        <section>
+            <h3>Producer</h3>
+            <pre><code class="hljs java" data-trim data-line-numbers="5-9">
+class Java8AsyncUserService {
+  private ExecutorService threadPool =
+                Executors.newCachedThreadPool();
+
+  CompletableFuture&lt;User&gt; getUser(long id) {
+    return CompletableFuture.supplyAsync(
+        () -> new User(id, "John Example"), threadPool);
+  }
+
+  void destroy() throws InterruptedException {
+    threadPool.shutdown();
+    threadPool.awaitTermination(2, TimeUnit.SECONDS);
+  }
+}
+					</code></pre>
+        </section>
+        <section>
+            <div><img alt="Spring logo" style="height: 7rem;"
+                     class="no-border no-margin no-background"
+                     src="assets/img/spring-framework-logo.svg"></div>
+            <h1>&nbsp;<span style="text-transform: none; color: #5fb832">@Async</span></h1>
+        </section>
+        <section>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+@SpringBootApplication
+@EnableAsync // enables @Async support...
+public class GreeterApplication {
+  // ... using this thread pool
+  @Bean public Executor taskExecutor() {
+    return Executors.newCachedThreadPool();
+  }
+}
+            </code></pre>
+            <pre><code class="hljs java" data-trim data-line-numbers="5-11">
+@Service
+public class GreeterService {
+  private RestTemplate personRestTemplate = new RestTemplate();
+
+  @Async // runs on a separate thread from the async pool
+  public CompletableFuture&lt;String&gt; greetAsync(String name) {
+    String answer = personRestTemplate.getForObject(
+        "http://localhost:8080/hello/{name}",
+         String.class,  name);
+    return CompletableFuture.completedFuture(answer);
+  }
+}
+					</code></pre>
+        </section>
+        <section>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+@RestController
+public class GreeterRestController {
+  private GreeterService greeterService;
+
+  @GetMapping("greetings/async")
+  public String greetAsync() {
+    CompletableFuture&lt;String&gt; johnAnswer =
+        greeterService.greetAsync("John");
+    CompletableFuture&lt;String&gt; andrewAnswer =
+        greeterService.greetAsync("Andrew");
+    // blocks the current thread (form the servlet pool)
+    CompletableFuture.allOf(johnAnswer, andrewAnswer).join();
+    return johnAnswer.get() + ", " + andrewAnswer.get();
+  }
+}
+            </code></pre>
+        </section>
+        <section>
+            <div><img alt="Spring logo" style="height: 7rem;"
+                      class="no-border no-margin no-background"
+                      src="assets/img/spring-framework-logo.svg"></div>
+            <h5 style="margin: 0"><span style="text-transform: none; color: #5fb832">Support for Servlet 3.0</span></h5>
+            <h5><span style="text-transform: none; color: #5fb832">asynchronous processing</span></h5>
+        </section>
+        <section>
+            <h3>Servlet 3.0 async processing</h3>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+public class AsyncServlet extends HttpServlet {
+  public void doGet(HttpServletRequest request,
+                    HttpServletResponse response) {
+    AsyncContext asyncContext =
+                request.startAsync(request, response);
+    // store the async context somewhere...
+  }
+}
+
+// when some another thread is ready to response
+AsyncContext asyncContext = // get the async context
+PrintWriter writer = asyncContext.getResponse().getWriter();
+writer.print("Hello...");
+writer.close();
+            </code></pre>
+        </section>
+        <section>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+@SpringBootApplication
+@EnableAsync
+public class GreeterApplication {
+  @Bean public Executor taskExecutor() {
+    return Executors.newCachedThreadPool();
+  }
+
+  @Bean public WebMvcConfigurer webMvcConfigurer() {
+    return new WebMvcConfigurer() {
+      @Override
+      public void configureAsyncSupport(
+          final AsyncSupportConfigurer configurer) {
+          // uses the @Async thread pool
+          // also for Servlet 3.0 async processing
+          configurer.setTaskExecutor(
+            new ConcurrentTaskExecutor(taskExecutor()));
+      }
+    };
+  }
+}
+            </code></pre>
+        </section>
+        <section>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+@RestController
+public class GreeterRestController {
+  private GreeterService greeterService;
+
+  @GetMapping("greetings/async")
+  // note the Callable&lt;String&gt; being returned
+  public Callable&lt;String&gt; greetAsync() {
+    // runs in another thread out of the servlet thread pool
+    return () -> {
+      CompletableFuture&lt;String&gt; johnAnswer =
+          greeterService.greetAsync("John");
+      CompletableFuture&lt;String&gt; andrewAnswer =
+          greeterService.greetAsync("Andrew");
+      // blocks the thread form the async pool
+      CompletableFuture.allOf(johnAnswer, andrewAnswer).join();
+      return johnAnswer.get() + ", " + andrewAnswer.get();
+    };
+  }
+}
+            </code></pre>
+        </section>
+        <section>
+            <h3>How it works... (1/2)</h3>
+            <ul>
+                <li>The controller returns a <code class="highlight">Callable</code>.</li>
+                <li>Spring MVC calls <code class="highlight">request.startAsync()</code> and submits the <code class="highlight">Callable</code> to a <code class="highlight">TaskExecutor</code> for processing in a separate thread.</li>
+                <li>Meanwhile, the <code class="highlight">DispatcherServlet</code> and all filters exit the Servlet container thread, but the response remains open.</li>
+            </ul>
+        </section>
+        <section>
+            <h3>How it works... (2/2)</h3>
+            <ul>
+                <li>Eventually the <code class="highlight">Callable</code> produces a result, and Spring MVC dispatches the request back to the Servlet container to complete processing.</li>
+                <li>The <code class="highlight">DispatcherServlet</code> is invoked again, and processing resumes with the asynchronously produced return value from the <code class="highlight">Callable</code>.</li>
+            </ul>
+            <p style="text-align: right"><small>Taken from <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-async-processing" target="_blank">Spring MVC documentation</a></small></p>
+        </section>
+        <section>
+            <h3>Conclusions</h3>
+            <p style="text-align: left">Introducing Spring <code class="highlight">@Async</code> calls (as in the code examples) results in almost <span class="highlight">2&nbsp;x&nbsp;faster</span> execution comparing to traditional synchronous processing.</p>
+            <p style="text-align: left">Applying the Spring's support for the Servlet 3.0 asynchronous processing on top of the Spring's
+                <code class="highlight">@Async</code> support <span class="highlight">does not bring performance improvement</span>.</p>
+            <p style="text-align: left">Instead, the Servlet thread pool is not blocked, thus the application is <span class="highlight">more scalable</span>.</p>
+        </section>
+    </div>
+</div>
+
+<script src="assets/js/reveal.js"></script>
+
+<script>
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        hash: true,
+        dependencies: [
+            { src: 'assets/plugin/markdown/marked.js' },
+            { src: 'assets/plugin/markdown/markdown.js' },
+            { src: 'assets/plugin/notes/notes.js', async: true },
+            { src: 'assets/plugin/highlight/highlight.js', async: true }
+        ]
+    });
+</script>
+</body>
+</html>
