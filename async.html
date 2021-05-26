@@ -143,9 +143,9 @@ public interface Future&lt;V&gt; {
           <ul>
             <li>
               The <code class="highlight">FutureTask</code> class is an
-              implementation of <code class="highlight">Future</code> that
-              implements <code class="highlight">Runnable</code>, and so may be
-              executed by an <code class="highlight">Executor</code>.
+              implementation of <code class="highlight">Future</code> and
+              <code class="highlight">Runnable</code>, and so may be executed by
+              an <code class="highlight">Executor</code>.
             </li>
           </ul>
           <pre><code class="hljs java" data-trim data-line-numbers>
@@ -192,46 +192,23 @@ public interface Future&lt;V&gt; {
         </section>
 
         <section>
-          <h3>Hands-on example</h3>
-          <p>
-            Repository on
-            <a
-              href="https://github.com/devonfw-java-advanced/concurrent"
-              target="_blank"
-              >github</a
-            >
-            contains branches:
-          </p>
-          <ul>
-            <li>
-              <a
-                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
-                target="_blank"
-                >step-0</a
-              >
-              - base version
-            </li>
-            <li>
-              <a
-                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-1"
-                target="_blank"
-                >step-1</a
-              >
-              - <span class="highlight">Future</span> and
-              <span class="highlight">FutureTask</span>
-            </li>
-            <li>
-              <a
-                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-2"
-                target="_blank"
-                >step-2</a
-              >
-              -
-              <span class="highlight">CompletableFuture</span>
-            </li>
-          </ul>
-        </section>
+          <h3>Example</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+ interface PiService { Pi computePi(int timeToComputeInSeconds) }
 
+ class App {
+   PiService ps = ...
+   void show(int timeInSeconds) throws InterruptedException {
+     CompletableFuture&lt;Pi&gt; future = CompletableFuture
+       .supplyAsync(() -> ps.computePi(timeInSeconds));
+     displayOtherThings(); // do other things while computing π
+     try {
+       displayText(future.get());
+     } catch (ExecutionException ex) { }
+   }
+ }
+					</code></pre>
+        </section>
         <section>
           <div>
             <img
@@ -294,6 +271,48 @@ public class AsyncConfig {
 }
 					</code></pre>
         </section>
+
+        <section>
+          <h3>Hands-on example</h3>
+          <p>
+            Repository on
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent"
+              target="_blank"
+              >github</a
+            >
+            contains branches:
+          </p>
+          <ul>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
+                target="_blank"
+                >step-0</a
+              >
+              - base version
+            </li>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-1"
+                target="_blank"
+                >step-1</a
+              >
+              - <span class="highlight">Future</span> and
+              <span class="highlight">FutureTask</span>
+            </li>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-2"
+                target="_blank"
+                >step-2</a
+              >
+              -
+              <span class="highlight">CompletableFuture</span>
+            </li>
+          </ul>
+        </section>
+
         <section>
           <div>
             <img
