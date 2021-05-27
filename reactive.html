@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>devonfw Java Advanced Training - Reactive</title>
+
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/reveal.css">
+    <link rel="stylesheet" href="assets/css/theme/black.css">
+    <link rel="stylesheet" href="assets/css/slides.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="assets/lib/css/monokai.css">
+
+    <link rel="icon" href="favicon.ico">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'assets/css/print/pdf.css' : 'assets/css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+</head>
+<body>
+<div class="reveal training">
+    <div class="slides">
+        <section>
+            <h2 class="no-text-transform" style="color: #5382A1">Reactive</h2>
+            <h2><img alt="Java logo" style="height: 17rem;" class="no-border no-margin no-background"
+                     src="assets/img/java-logo.svg">&nbsp;</h2>
+        </section>
+        <section>
+            <h2>Agenda</h2>
+            <ul>
+                <li>Reactive programming in Java</li>
+                <li>Reactive streams</li>
+                <li>Project reactor</li>
+                <li>Spring's WebFlux and WebClient</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Reactive programming</h3>
+            <ul>
+                <li>Reactive programming is a paradigm to develope <code class="highlight">asynchronous</code> and <code
+                        class="highlight">non-blocking</code>.
+                </li>
+                <li>Main part of reactive programming is stream of data which we can observe, work with or even apply
+                    back pressure.
+                </li>
+                <li>Help us to create flexible, loosely-coupled, and scalable software.</li>
+            </ul>
+        </section>
+        <section>
+            <h1><img alt="Blocking programming" style="height: 35rem;" class="no-border no-margin no-background"
+                     src="assets/img/reactive-blocking.jpg"/></h1>
+			<p style="text-align: right"><small><a href="https://projectreactor.io/learn" target="_blank">https://projectreactor.io/learn</a></small></p>
+        </section>
+        <section>
+            <h1><img alt="Non-blocking programming" style="height: 35rem;" class="no-border no-margin no-background"
+                     src="assets/img/reactive-nonblocking.jpg"/></h1>
+			<p style="text-align: right"><small><a href="https://projectreactor.io/learn" target="_blank">https://projectreactor.io/learn</a></small></p>
+        </section>
+        <section>
+            <h3>Reactive streams / Java libraries</h3>
+            <ul>
+                <li>Reactive Streams is a community initiative to provide a standard for asynchronous stream processing with non-blocking backpressure.
+                </li>
+                <li>There are several specification implementation RxJava, Akka Streams, Project Reactor, etc</li>
+                <li>Reactive streams specification is semantically equivalent to the Java Flow library.
+                </li>
+                <li>Can be used interchangeable.
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h1><img alt="Spring reactive stack" style="height: 35rem;" class="no-border no-margin no-background"
+                     src="assets/img/reactive-spring-stack.svg"/></h1>
+			<p style="text-align: right"><small><a href="https://spring.io/reactive" target="_blank">https://spring.io/reactive</a></small></p>
+        </section>
+        <section>
+            <h3>Project Reactor</h3>
+            <ul>
+                <li>"Reactor is reactive library, based on the Reactive Streams specification, for building non-blocking applications on the JVM"
+                </li>
+                <li>It is usead as a base of reactive stack in Spring Boot</li>
+                <li>Fully non-blocking
+                </li>
+				<li>Interacts with Java's functional API, CompletableFuture, Stream, and Duration</li>
+                <li>Well-suited for a microservices architecture, Reactor offers backpressure-ready network engines for HTTP (including Websockets), TCP, and UDP
+                </li>
+            </ul>
+        </section>
+        <section>
+            <ul>
+                <li>Reactor offers two reactive and composable APIs, Flux [N] and Mono [0|1]</li>
+            </ul>
+            <pre>
+                <code class="hljs java" data-trim data-line-numbers>
+Flux&lt;Integer&gt; just = Flux.just(1, 2, 3, 4);
+Mono&lt;Integer&gt; just = Mono.just(1);
+Publisher&lt;String&gt; just = Mono.just(1);
+			    </code>
+            </pre>
+        </section>
+        <section>
+            <h3>Subscribing to a Stream</h3>
+            <pre>
+                <code class="hljs java" data-trim data-line-numbers>
+List&lt;Integer&gt; elements = new ArrayList<>();
+Flux.just(1, 2, 3, 4)
+  .log()
+  .subscribe(elements::add);
+			    </code>
+            </pre>
+        </section>
+		<section>
+            <h3>Comparison to Java 8 Streams</h3>
+            <ul>
+                <li>Does it is the same?
+                </li>
+            </ul>
+			<pre>
+                    <code class="hljs java" data-trim data-line-numbers>
+List&lt;Integer&gt; collected = Stream.of(1, 2, 3, 4)
+  .collect(toList());
+					</code>
+                </pre>
+        </section>
+		<section>
+            <ul>
+                <li>No. This is push vs pull. In a reactive approach, events are pushed to the subscribers as they come in.
+                </li>
+                <li>In Java Streams terminal operator pull all the data and return it. With Reactive we could have an infinite stream coming in from an external resource.
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>WebFlux</h3>
+            <ul>
+                <li>Spring WebFlux is reactive-stack web framework added in Spring 5.0</li>
+				<li>It is fully non-blocking, supports Reactive Streams back pressure, and runs on such servers as Netty, Undertow, and Servlet 3.1+ containers</li>
+				<li>At the programming-model level, Java 8 enabled Spring WebFlux to offer functional web endpoints alongside annotated controllers</li>
+            </ul>
+			<pre>
+                    <code class="hljs java" data-trim data-line-numbers>
+@GetMapping("/{id}")
+private Mono&lt;Employee&gt; getEmployeeById(@PathVariable String id) {
+    return employeeRepository.findEmployeeById(id);
+}
+					</code>
+                </pre>
+        </section>
+        <section>
+            <h3>WebClient</h3>
+            <ul>
+                <li>WebClient is a non-blocking client with support for reactive streams.</li>
+                <li>It has a functional, fluent API based on Reactor</li>
+            </ul>
+			<pre>
+                    <code class="hljs java" data-trim data-line-numbers>
+WebClient client = WebClient.create("https://example.org");
+
+Mono&lt;Person&gt; result = client.get()
+        .uri("/persons/{id}", id)
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToMono(Person.class);
+					</code>
+                </pre>
+        </section>
+        <section>
+            <h3>Hands-on</h3>
+            <p>
+                Repository on github
+                <a
+                        href="https://github.com/devonfw-java-advanced/reactive"
+                        target="_blank"
+                >https://github.com/devonfw-java-advanced/reactive</a
+                >
+                contains branches:
+            </p>
+        </section>
+    </div>
+</div>
+
+<script src="assets/js/reveal.js"></script>
+
+<script>
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        hash: true,
+        dependencies: [
+            {src: 'assets/plugin/markdown/marked.js'},
+            {src: 'assets/plugin/markdown/markdown.js'},
+            {src: 'assets/plugin/notes/notes.js', async: true},
+            {src: 'assets/plugin/highlight/highlight.js', async: true}
+        ]
+    });
+</script>
+</body>
+</html>
