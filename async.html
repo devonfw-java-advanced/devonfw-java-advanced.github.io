@@ -65,14 +65,10 @@
             class="no-border no-margin no-background"
             src="assets/img/monte-carlo-pi-220px-Pi_30K.gif"
           />
-          <ul>
-            <li>
-              <span
-                >Given that the ratio of their areas is π / 4 , the value of π
-                can be approximated using a Monte Carlo method.</span
-              >
-            </li>
-          </ul>
+          <p style="text-align: left">
+            Given that the ratio of their areas is π / 4 , the value of π can be
+            approximated using a Monte Carlo method.
+          </p>
         </section>
         <section>
           <h3>Runnable vs. Callable</h3>
@@ -102,10 +98,10 @@ public interface Callable&lt;V&gt; {
         </section>
         <section>
           <h3>Future</h3>
-          <ul>
-            <li>
-              A Future represents the result of an asynchronous computation:
-              <pre><code class="hljs java" data-trim data-line-numbers>
+          <p style="text-align: left">
+            A Future represents the result of an asynchronous computation:
+          </p>
+          <pre><code class="hljs java" data-trim data-line-numbers>
 public interface Future&lt;V&gt; {
   boolean cancel(boolean mayInterruptIfRunning);
   boolean isCancelled();
@@ -116,11 +112,9 @@ public interface Future&lt;V&gt; {
              TimeoutException;
 }
               </code></pre>
-            </li>
-          </ul>
         </section>
         <section>
-          <h3>Example 1/2</h3>
+          <h3>Example</h3>
           <pre><code class="hljs java" data-trim data-line-numbers>
  interface PiService { Pi computePi(int timeToComputeInSeconds) }
  class App {
@@ -139,15 +133,13 @@ public interface Future&lt;V&gt; {
 					</code></pre>
         </section>
         <section>
-          <h3>Example 2/2</h3>
-          <ul>
-            <li>
-              The <code class="highlight">FutureTask</code> class is an
-              implementation of <code class="highlight">Future</code> and
-              <code class="highlight">Runnable</code>, and so may be executed by
-              an <code class="highlight">Executor</code>.
-            </li>
-          </ul>
+          <h3>FutureTask</h3>
+          <p style="text-align: left">
+            The <code class="highlight">FutureTask</code> class is an
+            implementation of <code class="highlight">Future</code> and
+            <code class="highlight">Runnable</code>, and so may be executed by
+            an <code class="highlight">Executor</code>.
+          </p>
           <pre><code class="hljs java" data-trim data-line-numbers>
  FutureTask&lt;Pi&gt; future =
    new FutureTask&lt;String&gt;(new Callable&lt;Pi&gt;() {
