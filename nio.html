@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>devonfw Java Advanced Training - Non-Blocking I/O</title>
+
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <link rel="stylesheet" href="assets/css/reveal.css" />
+    <link rel="stylesheet" href="assets/css/theme/black.css" />
+    <link rel="stylesheet" href="assets/css/slides.css" />
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="assets/lib/css/monokai.css" />
+
+    <link rel="icon" href="favicon.ico" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = window.location.search.match(/print-pdf/gi)
+        ? "assets/css/print/pdf.css"
+        : "assets/css/print/paper.css";
+      document.getElementsByTagName("head")[0].appendChild(link);
+    </script>
+  </head>
+  <body>
+    <div class="reveal training">
+      <div class="slides">
+        <section>
+          <h2 class="no-text-transform" style="color: #5382a1">Non-Blocking I/O</h2>
+          <h2>
+            <img
+              alt="Java logo"
+              style="height: 17rem"
+              class="no-border no-margin no-background"
+              src="assets/img/java-logo.svg"
+            />&nbsp;
+          </h2>
+        </section>
+        <section>
+          <h2>Agenda</h2>
+          <ul>
+            <li>Non-Blocking I/O</li>
+            <li>Servlet 3.1 Non-Blocking I/O support</li>
+            <li>Hands-on example</li>
+          </ul>
+        </section>
+        <section>
+          <h3>What is Non-Blocking I/O?</h3>
+          <section>
+            <h2>Threads not waiting for I/O operations to finish</h2>
+          </section>
+        </section>
+        <section>
+          <h3>Non-Blocking I/O in Java</h3>
+          <section>
+            <ul>
+              <li>Introduced in 1.4</li>
+              <li>Enhanced in java 1.7</li>
+              <li><a href="https://github.com/netty/netty">Netty</a> - a non-blocking I/O client-server framework</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+            <h3>Servlet 3.0 vs 3.1</h3>
+            <section>
+              <p>With traditional IO if streamed data is slower than the server
+                can read then the server thread is waiting for that data </p>
+              <pre><code class="hljs java" data-trim data-line-numbers>
+                public class BlockingIoServlet extends HttpServlet {
+                    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+                         throws IOException, ServletException {     
+                 ServletInputStream input = request.getInputStream();
+                       byte[] b = new byte[1024];
+                       int len = -1;
+                       while ((len = input.read(b)) != -1) {
+                          . . . 
+                       }
+                   }
+                }
+                </code></pre>
+            </section>
+          </section>
+          <section>
+            <h3>Servlet 3.1 Non-Blocking I/O support</h3>
+            <section>
+              <p>Servlet 3.1 enhancements</p>
+              <ul>
+                  <li>Ability to register EventListeners</li>
+                  <li>Ability to check Input/Output Stream readiness</li>
+                  <li>Ability to check Input/Output Stream compleetnes</li>
+              </ul>
+            </section>
+          </section>
+          <section>
+            <h3>Non-Blocking reading</h3>
+            <section>
+              <p>ServletInputStream has the ability to regiser a ReadListener</p>
+              <pre><code class="hljs java" data-trim data-line-numbers>
+                AsyncContext context = request.startAsync();
+                ServletInputStream input = request.getInputStream();
+                input.setReadListener(new MyReadListener(input, context));
+              </code></pre>
+            </section>
+          </section>
+          <section>
+            <h3>Non-Blocking writing</h3>
+            <section>
+              <p>ServletOutputStream has the ability to regiser a WriteListener</p>
+              <pre><code class="hljs java" data-trim data-line-numbers>
+                AsyncContext context = request.startAsync();
+                ServletOutputStream responeOutput = response.getOutputStream();
+
+                responeOutput.setWriteListener(new WriteListener() { 
+                    @Override
+                    public void onWritePossible() throws IOException {
+                      while (responeOutput.isReady()) { 
+                        // write
+                      }
+                    }
+                    @Override
+                    public void onError(Throwable t) { 
+                      // Error handling
+                      context.complete();
+                    }
+                  });
+              
+              </code></pre>
+            </section>
+          </section>
+        </div>
+    </div>
+
+    <script src="assets/js/reveal.js"></script>
+
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+        hash: true,
+        dependencies: [
+          { src: "assets/plugin/markdown/marked.js" },
+          { src: "assets/plugin/markdown/markdown.js" },
+          { src: "assets/plugin/notes/notes.js", async: true },
+          { src: "assets/plugin/highlight/highlight.js", async: true },
+        ],
+      });
+    </script>
+  </body>
+</html>
