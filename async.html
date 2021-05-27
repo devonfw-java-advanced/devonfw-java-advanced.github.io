@@ -48,13 +48,13 @@
           <h2>Agenda</h2>
           <ul>
             <li>Asynchronous programming in Java</li>
-            <li>Hands-on example</li>
             <li>Spring's <code class="highlight">@Async</code> annotation</li>
+            <li>Hands-on</li>
             <li>
               Spring's support for the
               <span class="highlight">Servlet 3.0</span> asynchronous processing
             </li>
-            <li>Hands-on example</li>
+            <li>Hands-on</li>
           </ul>
         </section>
         <section>
@@ -65,14 +65,10 @@
             class="no-border no-margin no-background"
             src="assets/img/monte-carlo-pi-220px-Pi_30K.gif"
           />
-          <ul>
-            <li>
-              <span
-                >Given that the ratio of their areas is π / 4 , the value of π
-                can be approximated using a Monte Carlo method.</span
-              >
-            </li>
-          </ul>
+          <p style="text-align: left">
+            Given that the ratio of their areas is π / 4 , the value of π can be
+            approximated using a Monte Carlo method.
+          </p>
         </section>
         <section>
           <h3>Runnable vs. Callable</h3>
@@ -102,10 +98,10 @@ public interface Callable&lt;V&gt; {
         </section>
         <section>
           <h3>Future</h3>
-          <ul>
-            <li>
-              A Future represents the result of an asynchronous computation:
-              <pre><code class="hljs java" data-trim data-line-numbers>
+          <p style="text-align: left">
+            A Future represents the result of an asynchronous computation:
+          </p>
+          <pre><code class="hljs java" data-trim data-line-numbers>
 public interface Future&lt;V&gt; {
   boolean cancel(boolean mayInterruptIfRunning);
   boolean isCancelled();
@@ -116,11 +112,9 @@ public interface Future&lt;V&gt; {
              TimeoutException;
 }
               </code></pre>
-            </li>
-          </ul>
         </section>
         <section>
-          <h3>Example 1/2</h3>
+          <h3>Example</h3>
           <pre><code class="hljs java" data-trim data-line-numbers>
  interface PiService { Pi computePi(int timeToComputeInSeconds) }
  class App {
@@ -139,15 +133,13 @@ public interface Future&lt;V&gt; {
 					</code></pre>
         </section>
         <section>
-          <h3>Example 2/2</h3>
-          <ul>
-            <li>
-              The <code class="highlight">FutureTask</code> class is an
-              implementation of <code class="highlight">Future</code> that
-              implements <code class="highlight">Runnable</code>, and so may be
-              executed by an <code class="highlight">Executor</code>.
-            </li>
-          </ul>
+          <h3>FutureTask</h3>
+          <p style="text-align: left">
+            The <code class="highlight">FutureTask</code> class is an
+            implementation of <code class="highlight">Future</code> and
+            <code class="highlight">Runnable</code>, and so may be executed by
+            an <code class="highlight">Executor</code>.
+          </p>
           <pre><code class="hljs java" data-trim data-line-numbers>
  FutureTask&lt;Pi&gt; future =
    new FutureTask&lt;String&gt;(new Callable&lt;Pi&gt;() {
@@ -192,9 +184,38 @@ public interface Future&lt;V&gt; {
         </section>
 
         <section>
-          <h1>Hands-on example</h1>
-        </section>
+          <h3>Example 1/2</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+ interface PiService { Pi computePi(int timeToComputeInSeconds) }
 
+ class App {
+   PiService ps = ...
+   void show(int timeInSeconds) throws InterruptedException {
+     CompletableFuture&lt;Pi&gt; future = CompletableFuture
+       .supplyAsync(() -> ps.computePi(timeInSeconds));
+     displayOtherThings(); // do other things while computing π
+     try {
+       displayText(future.get());
+     } catch (ExecutionException ex) { }
+   }
+ }
+					</code></pre>
+        </section>
+        <section>
+          <h3>Example 2/2</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+        CompletableFuture&lt;?&gt; cs = CompletableFuture.supplyAsync(
+            () -> piService.computePi(timeToComputePi1))
+                .thenApplyAsync(
+                    pi -> pi.getComputedPi() * pi.getComputedPi())
+                .thenAcceptAsync(
+                    result -> logger.info("result: {}", result));
+
+        displayOtherThings(); // do other things while computing π
+
+        cs.join();
+					</code></pre>
+        </section>
         <section>
           <div>
             <img
@@ -215,9 +236,9 @@ public interface Future&lt;V&gt; {
 @Service
 public class PiSingleService {
   @Async
-  public CompletableFuture&lt;Pi&gt; computePi(int timeInSeconds) {
+  public Future&lt;Pi&gt; computePi(int timeInSeconds) {
     Pi pi = ...
-    return CompletableFuture.completedFuture(pi);
+    return new AsyncResult&lt;Pi&gt;(pi);
   }
 }
             </code></pre>
@@ -232,7 +253,7 @@ public class PiMultiService {
                 .map(this::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
-  private Pi get(CompletableFuture&lt;Pi&gt; f) {
+  private Pi get(Future&lt;Pi&gt; f) {
     try { return f.get(); } catch (Exception e) { return null; }
   }
 }
@@ -251,12 +272,130 @@ public class AsyncConfig {
     exe.setQueueCapacity(0);
     exe.setKeepAliveSeconds(10);
     exe.setThreadNamePrefix("async-");
+    exe.setAllowCoreThreadTimeOut(true);
     exe.initialize();
     return exe;
   }
 }
-					</code></pre>
+</code></pre>
         </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>
+            Repository on github
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent"
+              target="_blank"
+              >https://github.com/devonfw-java-advanced/concurrent</a
+            >
+            contains branches:
+          </p>
+          <ul>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
+                target="_blank"
+                >step-0</a
+              >
+              - base version
+            </li>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-1"
+                target="_blank"
+                >step-1</a
+              >
+              - <span class="highlight">Future</span> and
+              <span class="highlight">FutureTask</span>
+            </li>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-2"
+                target="_blank"
+                >step-2</a
+              >
+              -
+              <span class="highlight">CompletableFuture</span>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>
+            <span class="highlight">Future</span> and
+            <span class="highlight">FutureTask</span>
+          </p>
+          <ul>
+            <li>
+              Compute <span class="highlight">π</span> asynchronously using
+              <code class="highlight">ExecutorService</code>
+            </li>
+            <li>
+              Compute <span class="highlight">π</span> asynchronously using
+              <code class="highlight">Executor</code> and
+              <code class="highlight">FutureTask</code>
+            </li>
+            <li>
+              Compute <span class="highlight">π</span> asynchronously using
+              <code class="highlight">@Async</code>
+            </li>
+            <li>
+              Experiment with <span class="highlight">Future</span>, e.g.
+              <span class="highlight">Future::cancel</span>
+            </li>
+          </ul>
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
+              target="_blank"
+              >step-0</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent/tree/step-1"
+              target="_blank"
+              >step-1</a
+            >
+          </p>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>
+            <span class="highlight">CompletableFuture</span>
+          </p>
+          <p style="text-align: left">
+            Use <span class="highlight">CompletableFuture</span> to calculate
+            the area of the circle with radius <span class="highlight">r</span>
+          </p>
+
+          <ul>
+            <li>Without <code class="highlight">@Async</code></li>
+            <li>With <code class="highlight">@Async</code></li>
+          </ul>
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
+              target="_blank"
+              >step-0</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent/tree/step-1"
+              target="_blank"
+              >step-2</a
+            >
+          </p>
+        </section>
+
         <section>
           <div>
             <img
@@ -381,13 +520,13 @@ public class MvcConfig {
         </section>
 
         <section>
-          <h3>Hands-on example</h3>
+          <h3>Hands-on</h3>
           <p>
-            Repository on
+            Repository on github
             <a
               href="https://github.com/devonfw-java-advanced/asynchronous"
               target="_blank"
-              >github</a
+              >https://github.com/devonfw-java-advanced/asynchronous</a
             >
             contains branches:
           </p>
@@ -398,7 +537,7 @@ public class MvcConfig {
                 target="_blank"
                 >step-0</a
               >
-              base version without asynchronicity
+              - base version
             </li>
             <li>
               <a
@@ -406,7 +545,7 @@ public class MvcConfig {
                 target="_blank"
                 >step-1</a
               >
-              + asynchronicity in <span class="highlight">Servlet</span>
+              - asynchronicity in <span class="highlight">Servlet</span>
             </li>
             <li>
               <a
@@ -414,9 +553,73 @@ public class MvcConfig {
                 target="_blank"
                 >step-2</a
               >
-              + asynchronicity in <span class="highlight">Service</span>
+              - asynchronicity in <span class="highlight">Service</span>
             </li>
           </ul>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>Asynchronicity in <span class="highlight">Servlet</span></p>
+          <ul>
+            <li>
+              Prepare asynchronous version of
+              <span class="highlight">/mvc/pi-async</span> and
+              <span class="highlight">/rest/pi-async</span> on
+              <span class="highlight">Servlet</span> level.
+            </li>
+            <li>
+              Configure asynchronicity support in
+              <span class="highlight">WebMvcConfigurer</span>
+            </li>
+          </ul>
+
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-0"
+              target="_blank"
+              >step-0</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-1"
+              target="_blank"
+              >step-1</a
+            >
+          </p>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>Asynchronicity in <span class="highlight">Service</span></p>
+          <ul>
+            <li>Enable asynchronicity</li>
+            <li>Add asynchronicity the the service</li>
+            <li>
+              Configure custom
+              <span class="highlight">Executor </span>
+            </li>
+          </ul>
+
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-1"
+              target="_blank"
+              >step-1</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-2"
+              target="_blank"
+              >step-2</a
+            >
+          </p>
         </section>
       </div>
     </div>

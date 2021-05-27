@@ -1,0 +1,453 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/black.css" id="theme">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2 class="no-text-transform" style="color: #5382A1">Functional</h2>
+            <h2><img alt="Java logo" style="height: 17rem;" class="no-border no-margin no-background" src="assets/img/java-logo.svg">&nbsp;</h2>
+        </section>
+        <section>
+            <h2>Agenda</h2>
+            <ul>
+                <li>Introduction to functional programming</li>
+                <li>Anonymous Class vs Functional Interface</li>
+                <li>Method Reference usage</li>
+                <li>Standard Functional Interfaces</li>
+                <li>Streams</li>
+                <li>Working with Optionals</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Introduction to Functional Programming</h2>
+        </section>
+        <section>
+            <h2>Anonymous classes vs Functional interfaces</h2>
+            <p>Anonymous classes – the old way of functional programming in Java</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Collections.sort(words, new Comparator&lt;String&gt; {
+    public int compare(String s1, String s2) {
+        return Integer.compare(s1.length(), s2.length());
+    }
+});
+					</code></pre>
+        </section>
+        <section>
+            <h2>Anonymous classes vs Functional interfaces</h2>
+            <p>Functional interface – new way of functional programming in Java</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Collections.sort(words, (s1, s2) ->
+    Integer.compare(s1.length(), s2.length()));
+					</code></pre>
+        </section>
+        <section>
+            <h2>Functional interfaces</h2>
+            <ul>
+                <li>How come we don’t have to specify the type?</li>
+                <li>When should we specify the type?</li>
+                <ul>
+                    <li>When it helps to understand/document the code,</li>
+                    <li>When compiler reports a type inference error (then we have to specify it)</li>
+                </ul>
+            </ul>
+        </section>
+        <section>
+            <h2>Functional interfaces with enums</h2>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+public enum Operation {
+    PLUS("+") {
+        public double apply(double x, double y) { return x + y; }
+    };
+    MINUS("-") {
+        public double apply(double x, double y) { return x - y; }
+    };
+    MULTIPLY("*") {
+        public double apply(double x, double y) { return x * y; }
+    };
+    DIVIDE("/") {
+        public double apply(double x, double y) { return x / y; }
+    };
+
+    private final String symbol;
+    Operation(String symbol) { this.symbol = symbol; }
+
+    @Override
+    public String toString() { return symbol; }
+
+    public abstract double apply(double x, double y);
+}
+					</code></pre>
+        </section>
+        <section>
+            <h2>Functional interfaces with enums</h2>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+public enum Operation {
+    PLUS("+", (x, y) -> x + y );
+    MINUS("-", (x, y) -> x - y );
+    MULTIPLY("*", (x, y) -> x * y );
+    DIVIDE("/", (x, y) -> x / y );
+
+    private final String symbol;
+    private final DoubleBinaryOperator op;
+    Operation(String symbol, DoubleBinaryOperator op) {
+        this.symbol = symbol;
+        this.op = op;
+    }
+
+    @Override
+    public String toString() { return symbol; }
+
+    public double apply(double x, double y) {
+        return op.applyAsDouble(x, y);
+    }
+}
+					</code></pre>
+        </section>
+        <section>
+            <h2>Summary</h2>
+            <ul>
+                <li>Don’t use lambdas everywhere – they are meant to ease the work. If they are too complicated to understand use classic/iterative approach,</li>
+                <li>Use types only when necessary, let your compiler do the work,</li>
+                <li>Specify type for data that you want to process with lambdas – it’ll help the compiler to infer the type inside</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Method references</h2>
+            <p>Method references are even shorter way to write some expressions than lambdas</p>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+map.merge(key, 1, (count, incr) -> count + incr);
+					</code></pre>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+map.merge(key, 1, Integer::sum);
+					</code></pre>
+        </section>
+        <section>
+            <h2>Method references</h2>
+            <ul>
+                <li>The more parameters are used, the more code can be removed with the usage of method references,</li>
+                <li>Lambdas, however, can be self-documenting and easier to understand even it they are longer,</li>
+                <li>If the lambda takes too much space and makes code hard to understand it can be extracted to another method which then can be used as a method reference,</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Types of method references</h2>
+            <p>Reference to a Static Method</p>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Integer::parseInt
+					</code></pre>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+string -> Integer.parseInt(string)
+					</code></pre>
+        </section>
+        <section>
+            <h2>Types of method references</h2>
+            <p>Reference to an Instance Method of a specific object</p>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Instant.now()::isAfter
+					</code></pre>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Instant then = Instant.now();
+t -> then.isAfter(then)
+					</code></pre>
+        </section>
+        <section>
+            <h2>Types of method references</h2>
+            <p>Reference to an Instance Method of an unspecified object</p>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+String::toLowerCase()
+					</code></pre>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+string -> string.toLowerCase()
+					</code></pre>
+        </section>
+        <section>
+            <h2>Types of method references</h2>
+            <p>Constructor of an object</p>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+HashMap&lt;K,V&gt;::new
+					</code></pre>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+() -> new HashMap&lt;K,V&gt;
+					</code></pre>
+        </section>
+        <section>
+            <h2>Types of method references</h2>
+            <p>Constructor of an array</p>
+            <p>method reference:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+int[]::new
+					</code></pre>
+            <p>lambda:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+length -> new int[length]
+					</code></pre>
+        </section>
+        <section>
+            <h2>Standard Functional interfaces</h2>
+            <p>java.util.function</p>
+        </section>
+        <section>
+            <h2>Standard Functional Interfaces</h2>
+            <p>UnaryOperator&lt;T&gt;</p>
+            <p>Signature:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+T apply(T t)
+					</code></pre>
+            <p>Example:</p>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+String::toLowerCase
+					</code></pre>
+        </section>
+        <section>
+        <h2>Standard Functional Interfaces</h2>
+        <p>BinaryOperator&lt;T&gt;</p>
+        <p>Signature:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+T apply(T t1, T t2)
+					</code></pre>
+        <p>Example:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+BigInteger:add
+					</code></pre>
+        </section>
+        <section>
+        <h2>Standard Functional Interfaces</h2>
+        <p>Predicate&lt;T&gt;</p>
+        <p>Signature:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+boolean test(T t)
+					</code></pre>
+        <p>Example:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+Collection::isEmpty
+					</code></pre>
+        </section>
+        <section>
+        <h2>Standard Functional Interfaces</h2>
+        <p>Function&lt;T,R&gt;</p>
+        <p>Signature:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+R apply(T t)
+					</code></pre>
+        <p>Example:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+Arrays::asList
+					</code></pre>
+        </section>
+        <section>
+        <h2>Standard Functional Interfaces</h2>
+        <p>Supplier&lt;T&gt;</p>
+        <p>Signature:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+T get()
+					</code></pre>
+        <p>Example:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+Instant::now
+					</code></pre>
+        </section>
+        <section>
+        <h2>Standard Functional Interfaces</h2>
+        <p>Consumer&lt;T&gt;</p>
+        <p>Signature:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+void accept(T t)
+					</code></pre>
+        <p>Example:</p>
+        <pre><code class="hljs java" data-trim data-line-numbers>
+System.out::println
+					</code></pre>
+        </section>
+        <section>
+            <h2>Writing your own functional interfaces</h2>
+            <ul>
+                <li>When to write you own Functional Interface?</li>
+                <li>Usage of <span class="highlight">@FunctionalInterface</span></li>
+            </ul>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+example of use of @FunctionalInterface
+					</code></pre>
+        </section>
+        <section>
+            <h2>functional interfaces exercises</h2>
+        </section>
+        <section>
+            <h2>Streams</h2>
+            <ul>
+                <li>Consist of two abstractions: Stream and stream’s flow,</li>
+                <li>They allow to perform multi-step, consecutive operations on data processed in stream’s flow,</li>
+                <li>Typical stream consists of a source stream, (optional) intermediate operations and final operation,</li>
+                <li>Lazy</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Contents of a stream</h2>
+            <ul>
+                <li>beginning of a stream: <b>stream</b>, <b>parallelStream</b></li>
+                <li>intermediate functions: <b>map, filter, flatmap, limit, skip, ...</b></li>
+                <li>terminal functions: <b>collect, count, max, min, findFirst, findAny, anyMatch, ...</b></li>
+            </ul>
+        </section>
+        <section>
+            <h2>When to use Streams</h2>
+            <ul>
+                <li>When not to use streams?</li>
+                <li>When to use streams?</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Avoid side effects in Streams</h2>
+            <ul>
+                <li>What are pure functions and why they should be used?</li>
+                <li>Problem with exceptions in streams</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Parallel Streams</h2>
+            <ul>
+                <li>How they work?</li>
+                <li>What are the benefits and pitfalls of parallel streams usage?</li>
+                <li>Why you should be careful when using parallel streams?</li>
+            </ul>
+        </section>
+        <section>
+            <p>Examples of how to use streams</p>
+            <p>go to code</p>
+        </section>
+        <section>
+            <h2>exercises for streams</h2>
+        </section>
+        <section>
+            <h2>Optionals</h2>
+            <p>Optional&lt;T&gt;</p>
+            <ul>
+                <li>What are optionals</li>
+                <li>Why returning a null within an optional is a mistake</li>
+                <li>Optionals are not serializable</li>
+                <li>Optionals should not be used everywhere</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Operators provided with Optional API</h2>
+            <ul>
+                <li>filter, map, flatmap</li>
+                <li>orElse() vs orElseGet()</li>
+            </ul>
+        </section>
+        <section>
+            <h2>JDK 9 changes to the Optional API</h2>
+            <ul>
+                <li>or()</li>
+                <li>ifPresentOrElse()</li>
+                <li>stream()</li>
+            </ul>
+        </section>
+        <section>
+            <p>examples of how to use optionals and common mistakes</p>
+            <ul>
+                <li>use of isPresent() instead of ifPresent()</li>
+            </ul>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Optional&lt;Movie&gt; movie = Optional.of(library.findMovie(id));
+if (movie.isPresent()) {
+    someLogic;
+    }
+return movie;
+					</code></pre>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+Optional&lt;Movie&gt; movie = Optional.of(library.findMovie(id));
+movie.ifPresent(() -> someLogic );
+return movie;
+					</code></pre>
+        </section>
+        <section>
+            <p>examples of how to use optionals and common mistakes</p>
+            <ul>
+                <li>passing Optional as a parameter</li>
+            </ul>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+public static List&lt;Person&gt; search(List&lt;Person&gt; people, Optional&lt;Integer&gt; age) {
+    // Null checks for people and name
+    return people.stream()
+            .filter(p -> p.getAge().get() >= age.orElse(0))
+            .collect(Collectors.toList());
+}
+					</code></pre>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+public static List&lt;Person&gt; search(List&lt;Person&gt; people, Integer age) {
+    // Null checks for people and name
+    final Integer ageFilter = age != null ? age : 0;
+
+    return people.stream()
+            .filter(p -> p.getAge().get() >= ageFilter)
+            .collect(Collectors.toList());
+}
+					</code></pre>
+        </section>
+        <section>
+            <p>examples of how to use optionals and common mistakes</p>
+            <ul>
+                <li>using flatmap + map for streamsOfOptionals</li>
+            </ul>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+streamOfOptionals
+    .filter(Optional::isPresent)
+    .map(Optional::get)
+					</code></pre>
+            <pre><code class="hljs java" data-trim data-line-numbers>
+streamOfOptionals
+    .flatmap(Optional::stream)
+					</code></pre>
+        </section>
+        <section>
+            <h2>Any Questions?</h2>
+        </section>
+        <section>
+            <h2>exercises for optionals</h2>
+        </section>
+        <section>
+            <h2>thank you very much!</h2>
+        </section>
+    </div>
+</div>
+
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+    });
+</script>
+</body>
+</html>
