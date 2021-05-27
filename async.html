@@ -184,7 +184,7 @@ public interface Future&lt;V&gt; {
         </section>
 
         <section>
-          <h3>Example</h3>
+          <h3>Example 1/2</h3>
           <pre><code class="hljs java" data-trim data-line-numbers>
  interface PiService { Pi computePi(int timeToComputeInSeconds) }
 
@@ -199,6 +199,21 @@ public interface Future&lt;V&gt; {
      } catch (ExecutionException ex) { }
    }
  }
+					</code></pre>
+        </section>
+        <section>
+          <h3>Example 2/2</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+        CompletableFuture&lt;?&gt; cs = CompletableFuture.supplyAsync(
+            () -> piService.computePi(timeToComputePi1))
+                .thenApplyAsync(
+                    pi -> pi.getComputedPi() * pi.getComputedPi())
+                .thenAcceptAsync(
+                    result -> logger.info("result: {}", result));
+
+        displayOtherThings(); // do other things while computing π
+
+        cs.join();
 					</code></pre>
         </section>
         <section>
@@ -221,9 +236,9 @@ public interface Future&lt;V&gt; {
 @Service
 public class PiSingleService {
   @Async
-  public CompletableFuture&lt;Pi&gt; computePi(int timeInSeconds) {
+  public Future&lt;Pi&gt; computePi(int timeInSeconds) {
     Pi pi = ...
-    return CompletableFuture.completedFuture(pi);
+    return new AsyncResult&lt;Pi&gt;(pi);
   }
 }
             </code></pre>
@@ -238,7 +253,7 @@ public class PiMultiService {
                 .map(this::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
-  private Pi get(CompletableFuture&lt;Pi&gt; f) {
+  private Pi get(Future&lt;Pi&gt; f) {
     try { return f.get(); } catch (Exception e) { return null; }
   }
 }
