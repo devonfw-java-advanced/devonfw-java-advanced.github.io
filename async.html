@@ -272,6 +272,7 @@ public class AsyncConfig {
     exe.setQueueCapacity(0);
     exe.setKeepAliveSeconds(10);
     exe.setThreadNamePrefix("async-");
+    exe.setAllowCoreThreadTimeOut(true);
     exe.initialize();
     return exe;
   }
@@ -521,11 +522,11 @@ public class MvcConfig {
         <section>
           <h3>Hands-on</h3>
           <p>
-            Repository on
+            Repository on github
             <a
               href="https://github.com/devonfw-java-advanced/asynchronous"
               target="_blank"
-              >github</a
+              >https://github.com/devonfw-java-advanced/asynchronous</a
             >
             contains branches:
           </p>
@@ -555,6 +556,70 @@ public class MvcConfig {
               - asynchronicity in <span class="highlight">Service</span>
             </li>
           </ul>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>Asynchronicity in <span class="highlight">Servlet</span></p>
+          <ul>
+            <li>
+              Prepare asynchronous version of
+              <span class="highlight">/mvc/pi-async</span> and
+              <span class="highlight">/rest/pi-async</span> on
+              <span class="highlight">Servlet</span> level.
+            </li>
+            <li>
+              Configure asynchronicity support in
+              <span class="highlight">WebMvcConfigurer</span>
+            </li>
+          </ul>
+
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-0"
+              target="_blank"
+              >step-0</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-1"
+              target="_blank"
+              >step-2</a
+            >
+          </p>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>Asynchronicity in <span class="highlight">Service</span></p>
+          <ul>
+            <li>Enable asynchronicity</li>
+            <li>Add asynchronicity the the service</li>
+            <li>
+              Configure custom
+              <span class="highlight">Executor </span>
+            </li>
+          </ul>
+
+          <p style="text-align: left">
+            The basis of the exercise, branch
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-0"
+              target="_blank"
+              >step-0</a
+            >
+          </p>
+          <p style="text-align: left">
+            Sample solution, branch:
+            <a
+              href="https://github.com/devonfw-java-advanced/asynchronous/tree/step-1"
+              target="_blank"
+              >step-2</a
+            >
+          </p>
         </section>
       </div>
     </div>
