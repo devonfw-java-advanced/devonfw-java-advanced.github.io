@@ -1,0 +1,127 @@
+= Introduction
+During the workshop we will implement a file upload/download application.
+
+== Setup
+Clone the code from https://github.com/devonfw-java-advanced/nonblockingio.git[here]
+
+
+== Step 1
+Checkout the branch step1. 
+
+[source,bash]
+--------
+git checkout step1
+--------
+
+=== Code review
+Look at the configuration in `application.yaml` 
+
+[source,yaml]
+--------
+server:
+  port: 7777
+  tomcat:
+    threads:
+      min-spare: 1
+      max: 1
+--------
+
+The server is configured to use only *one thread* that handles client requests. 
+
+The main entry point is the *NonBlockingIOApplication* class.
+
+Review the classes:
+
+`StorageService` – stores and reads files from an upload directory `upload-dir` which is emptied with every application restart
+
+`StorageController` – serves clients requests using blocking I/O
+
+`StorageControllerAsync` – a Non-Blocking I/O request controller
+
+=== Lab
+The application can be accessed under http://localhost:7777/[http://localhost:7777/]
+
+Start the visualvm. If you get an exception that java 8 is required try with command line and specify the jdk-home parameter
+
+[source,bash]
+--------
+visualvm --jdkhome C:\Projekte\software\java
+--------
+
+Go to the *Threads* tab. You sould see only one execution thread: `http-nio-7777-exec-1`.  
+
+Open http://localhost:7777/mvc/storage and upload a file called 1.pdf. The file should have more than 20 MBytes. You can use following example: https://fts.capgemini.com/private/27754295309461/1.pdf (expires soon).
+
+Now in few command line windows start a file download using curl.
+
+[source,bash]
+--------
+curl  --limit-rate 250k http://localhost:7777/mvc/files/1.pdf?clientId=1 --output 1.pdf
+curl  --limit-rate 250k http://localhost:7777/mvc/files/1.pdf?clientId=2 --output 2.pdf
+curl  --limit-rate 250k http://localhost:7777/mvc/files/1.pdf?clientId=3 --output 3.pdf
+--------
+
+Please check the *Threads* tab and start CPU Sampling in *Sampler* tab. 
+
+Now try to upload a file from few command line windows using curl. 
+
+[source,bash]
+--------
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-block?clientId=1
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-block?clientId=2
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-block?clientId=3
+--------
+
+Please check the *Threads* tab and start CPU Sampling in *Sampler* tab. 
+
+
+== Step 2
+
+Implement an NON-Blocking upload in `StorageControllerAsync.uploadNonblocking` method. Most of the code can be reused from the StorageController class. 
+
+* Start async requests: request.startAsync()
+* Register ReadListener on ServletInputStream
+* Read from stream only if input isReady and write it to a ByteArrayStream
+* In onAllDataRead write the date to storage service storageService.store(byteStream)
+
+Use curl to check the new implementation. 
+
+[source,bash]
+--------
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-nio?clientId=1
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-nio?clientId=2
+curl -X POST -H "Content-Type: application/pdf" --limit-rate 1500k --data-binary @1.pdf http://localhost:7777/mvc/upload-nio?clientId=3
+--------
+
+The finished step can be checkout out from step2 branch. 
+
+[source,bash]
+--------
+git checkout step2
+--------
+
+== Step 3
+
+Implement an NON-Blocking download in  `StorageControllerAsync.downloadNonblocking` method. Most of the code can be reused from the StorageController class. 
+
+* Start async requests: request.startAsync()
+* Set timeout context.setTimeout(0);
+* Register WriteListener on ServletOutputStream
+* Write to the stream only if output isReady 
+* After there is no more content to write flush the response and close the context context.complete()
+
+Use curl to check the new implementation. 
+
+[source,bash]
+--------
+curl  --limit-rate 250k http://localhost:7777/mvc/files-async/1.pdf?clientId=1 --output 1.pdf
+curl  --limit-rate 250k http://localhost:7777/mvc/files-async/1.pdf?clientId=2 --output 2.pdf
+curl  --limit-rate 250k http://localhost:7777/mvc/files-async/1.pdf?clientId=3 --output 3.pdf
+--------
+
+The finished step can be checkout out from step3 branch. 
+
+[source,bash]
+--------
+git checkout step3
+--------
