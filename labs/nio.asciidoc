@@ -50,7 +50,7 @@ visualvm --jdkhome C:\Projekte\software\java
 
 Go to the *Threads* tab. You sould see only one execution thread: `http-nio-7777-exec-1`.  
 
-Open http://localhost:7777/mvc/storage and upload a file called 1.pdf. The file should have more than 20 MBytes. You can use following example: https://fts.capgemini.com/private/27754295309461/1.pdf (expires soon).
+Open http://localhost:7777/mvc/storage and upload a file called 1.pdf. The file should have more than 20 MBytes. You can use provided example.
 
 Now in few command line windows start a file download using curl.
 
