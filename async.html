@@ -264,9 +264,9 @@ public class PiMultiService {
           <pre><code class="hljs java" data-trim data-line-numbers>
 @Configuration
 @EnableAsync
-public class AsyncConfig {
+public class TaskExecutorConfig {
   @Bean
-  public Executor asyncExecutor() {
+  public Executor taskExecutor() {
     ThreadPoolTaskExecutor exe = new ThreadPoolTaskExecutor();
     exe.setCorePoolSize(0);
     exe.setQueueCapacity(0);
