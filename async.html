@@ -116,18 +116,18 @@ public interface Future&lt;V&gt; {
         <section>
           <h3>Example</h3>
           <pre><code class="hljs java" data-trim data-line-numbers>
- interface PiService { Pi computePi(int timeToComputeInSeconds) }
+ interface PiService {
+    Pi compute(int timeToComputeInSeconds)
+ }
+
  class App {
    ExecutorService exec = ...
    PiService ps = ...
-   void show(int timeInSeconds) throws InterruptedException {
-     Future&lt;Pi&gt; future = exec.submit(new Callable&lt;Pi&gt;() {
-         public Pi call() { return ps.computePi(timeInSeconds);
-     }});
+
+   void show(int timeInSeconds) throws Exception {
+     Future&lt;Pi&gt; pi = exec.submit(() -> ps.compute(timeInSeconds));
      displayOtherThings(); // do other things while computing π
-     try {
-       displayText(future.get());
-     } catch (ExecutionException ex) { }
+     displayPi(pi.get());
    }
  }
 					</code></pre>
@@ -141,82 +141,24 @@ public interface Future&lt;V&gt; {
             an <code class="highlight">Executor</code>.
           </p>
           <pre><code class="hljs java" data-trim data-line-numbers>
- FutureTask&lt;Pi&gt; future =
+ FutureTask&lt;Pi&gt; pi =
    new FutureTask&lt;String&gt;(new Callable&lt;Pi&gt;() {
      public Pi call() {
-       return ps.computePi(timeInSeconds);
+       return ps.compute(timeInSeconds);
    }});
- e.execute(future);
+ e.execute(pi);
 					</code></pre>
-        </section>
-
-        <section>
-          <h1>
-            <img
-              alt="Java logo"
-              style="height: 17rem"
-              class="no-border no-margin no-background"
-              src="assets/img/java-logo.svg"
-            />&nbsp;<span style="color: #5382a1">8</span>
-          </h1>
-        </section>
-
-        <section>
-          <h3>CompletableFuture</h3>
-          <ul>
-            <li>
-              The <code class="highlight">Future</code> does not have any
-              methods to combine the computations or handle possible errors.
-            </li>
-            <li>
-              The <code class="highlight">CompletableFuture</code> implements
-              the <code class="highlight">Future</code> and the
-              <code class="highlight">CompletionStage</code>. The last interface
-              defines the contract for an asynchronous computation step that we
-              can combine with other steps.
-            </li>
-            <li>
-              <code class="highlight">CompletableFuture</code> has about 50
-              different methods for composing, combining, and executing
-              asynchronous computation steps and handling errors.
-            </li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>Example 1/2</h3>
+                    <p style="text-align: left">
+                        With lambda
+                    </p>
           <pre><code class="hljs java" data-trim data-line-numbers>
- interface PiService { Pi computePi(int timeToComputeInSeconds) }
-
- class App {
-   PiService ps = ...
-   void show(int timeInSeconds) throws InterruptedException {
-     CompletableFuture&lt;Pi&gt; future = CompletableFuture
-       .supplyAsync(() -> ps.computePi(timeInSeconds));
-     displayOtherThings(); // do other things while computing π
-     try {
-       displayText(future.get());
-     } catch (ExecutionException ex) { }
-   }
- }
+ FutureTask&lt;Pi&gt; pi =
+   new FutureTask&lt;String&gt;(() -> ps.compute(timeInSeconds));
+ e.execute(pi);
 					</code></pre>
         </section>
-        <section>
-          <h3>Example 2/2</h3>
-          <pre><code class="hljs java" data-trim data-line-numbers>
-        CompletableFuture&lt;?&gt; cs = CompletableFuture.supplyAsync(
-            () -> piService.computePi(timeToComputePi1))
-                .thenApplyAsync(
-                    pi -> pi.getComputedPi() * pi.getComputedPi())
-                .thenAcceptAsync(
-                    result -> logger.info("result: {}", result));
 
-        displayOtherThings(); // do other things while computing π
-
-        cs.join();
-					</code></pre>
-        </section>
-        <section>
+                <section>
           <div>
             <img
               alt="Spring logo"
@@ -234,30 +176,14 @@ public interface Future&lt;V&gt; {
         <section>
           <pre><code class="hljs java" data-trim data-line-numbers>
 @Service
-public class PiSingleService {
+public class PiService {
   @Async
-  public Future&lt;Pi&gt; computePi(int timeInSeconds) {
+  public Future&lt;Pi&gt; compute(int timeInSeconds) {
     Pi pi = ...
     return new AsyncResult&lt;Pi&gt;(pi);
   }
 }
             </code></pre>
-          <pre><code class="hljs java" data-trim data-line-numbers>
-@Service
-public class PiMultiService {
-  @Autowired
-  private PiSingleService ps;
-  public List&lt;Pi&gt; computeMultiPis(int timeInSeconds) {
-        return Stream.of(ps.computePi(timeInSeconds),
-                         ps.computePi(timeInSeconds))
-                .map(this::get).filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-  private Pi get(Future&lt;Pi&gt; f) {
-    try { return f.get(); } catch (Exception e) { return null; }
-  }
-}
-					</code></pre>
         </section>
 
         <section>
@@ -265,8 +191,7 @@ public class PiMultiService {
 @Configuration
 @EnableAsync
 public class TaskExecutorConfig {
-  @Bean
-  public Executor taskExecutor() {
+  @Bean public Executor taskExecutor() {
     ThreadPoolTaskExecutor exe = new ThreadPoolTaskExecutor();
     exe.setCorePoolSize(0);
     exe.setQueueCapacity(0);
@@ -309,19 +234,10 @@ public class TaskExecutorConfig {
               - <span class="highlight">Future</span> and
               <span class="highlight">FutureTask</span>
             </li>
-            <li>
-              <a
-                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-2"
-                target="_blank"
-                >step-2</a
-              >
-              -
-              <span class="highlight">CompletableFuture</span>
-            </li>
           </ul>
         </section>
 
-        <section>
+         <section>
           <h3>Hands-on</h3>
           <p>
             <span class="highlight">Future</span> and
@@ -363,6 +279,106 @@ public class TaskExecutorConfig {
             >
           </p>
         </section>
+
+        <section>
+          <h1>
+            <img
+              alt="Java logo"
+              style="height: 17rem"
+              class="no-border no-margin no-background"
+              src="assets/img/java-logo.svg"
+            />&nbsp;<span style="color: #5382a1">8</span>
+          </h1>
+        </section>
+
+        <section>
+          <h3>CompletableFuture</h3>
+          <ul>
+            <li>
+              The <code class="highlight">Future</code> does not have any
+              methods to combine the computations or handle possible errors.
+            </li>
+            <li>
+              The <code class="highlight">CompletableFuture</code> implements
+              the <code class="highlight">Future</code> and the
+              <code class="highlight">CompletionStage</code>. The last interface
+              defines the contract for an asynchronous computation step that we
+              can combine with other steps.
+            </li>
+            <li>
+              <code class="highlight">CompletableFuture</code> has about 50
+              different methods for composing, combining, and executing
+              asynchronous computation steps and handling errors.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Example 1/2</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+ interface PiService {
+    Pi compute(int timeToComputeInSeconds)
+  }
+
+ class App {
+   PiService ps = ...
+   void show(int timeInSeconds) throws Exception {
+     CompletableFuture&lt;Pi&gt; pi = CompletableFuture
+       .supplyAsync(() -> ps.compute(timeInSeconds));
+     displayOtherThings(); // do other things while computing π
+     displayText(pi.get());
+   }
+ }
+					</code></pre>
+        </section>
+        <section>
+          <h3>Example 2/2</h3>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+        CompletableFuture&lt;?&gt; cs = CompletableFuture.supplyAsync(
+            () -> piService.computePi(timeToComputePi1))
+                .thenApplyAsync(
+                    pi -> pi.getComputedPi() * pi.getComputedPi())
+                .thenAcceptAsync(
+                    result -> logger.info("result: {}", result));
+
+        displayOtherThings(); // do other things while computing π
+
+        cs.join();
+					</code></pre>
+        </section>
+
+        <section>
+          <h3>Hands-on</h3>
+          <p>
+            Repository on github
+            <a
+              href="https://github.com/devonfw-java-advanced/concurrent"
+              target="_blank"
+              >https://github.com/devonfw-java-advanced/concurrent</a
+            >
+            contains branches:
+          </p>
+          <ul>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-0"
+                target="_blank"
+                >step-0</a
+              >
+              - base version
+            </li>
+            <li>
+              <a
+                href="https://github.com/devonfw-java-advanced/concurrent/tree/step-2"
+                target="_blank"
+                >step-2</a
+              >
+              -
+              <span class="highlight">CompletableFuture</span>
+            </li>
+          </ul>
+        </section>
+
 
         <section>
           <h3>Hands-on</h3>
