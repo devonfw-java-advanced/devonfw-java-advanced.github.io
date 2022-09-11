@@ -47,8 +47,10 @@
         <section>
           <h2>Agenda</h2>
           <ul>
-            <li>Asynchronous programming in Java</li>
+            <li>Asynchronous programming in Java 5</li>
             <li>Spring's <code class="highlight">@Async</code> annotation</li>
+            <li>Hands-on</li>
+            <li>Asynchronous programming in Java 8</li>
             <li>Hands-on</li>
             <li>
               Spring's support for the
@@ -69,6 +71,16 @@
             Given that the ratio of their areas is π / 4 , the value of π can be
             approximated using a Monte Carlo method.
           </p>
+        </section>
+        <section>
+          <h1>
+            <img
+              alt="Java logo"
+              style="height: 17rem"
+              class="no-border no-margin no-background"
+              src="assets/img/java-logo.svg"
+            />&nbsp;<span style="color: #5382a1">5</span>
+          </h1>
         </section>
         <section>
           <h3>Runnable vs. Callable</h3>
@@ -337,14 +349,15 @@ public class TaskExecutorConfig {
         <section>
           <h3>Example 2/2</h3>
           <pre><code class="hljs java" data-trim data-line-numbers>
-        CompletableFuture&lt;?&gt; cs = CompletableFuture.supplyAsync(
-            () -> piService.computePi(timeToComputePi1))
+        CompletableFuture&lt;?&gt; cs = CompletableFuture
+                .supplyAsync(
+                    () -> piService.computePi(timeToComputePi1))
                 .thenApplyAsync(
                     pi -> pi.getComputedPi() * pi.getComputedPi())
                 .thenAcceptAsync(
                     result -> logger.info("result: {}", result));
 
-        displayOtherThings(); // do other things while computing π
+        displayOtherThings(); // do other things while computing and printing π*π
 
         cs.join();
 					</code></pre>
@@ -397,6 +410,7 @@ public class TaskExecutorConfig {
             <li>Without <code class="highlight">@Async</code></li>
             <li>With <code class="highlight">@Async</code></li>
           </ul>
+
           <p style="text-align: left">
             The basis of the exercise, branch
             <a
@@ -416,7 +430,12 @@ public class TaskExecutorConfig {
         </section>
 
         <section>
-          <div>
+          <h5 style="margin: 0">
+            <span style="text-transform: none; color: #5fb832"
+              >
+           JSR 315: Java Servlet 3.0 Specification
+           </span>
+            </h5>             <div>
             <img
               alt="Spring logo"
               style="height: 7rem"
@@ -424,36 +443,15 @@ public class TaskExecutorConfig {
               src="assets/img/spring-framework-logo.svg"
             />
           </div>
-          <h5 style="margin: 0">
-            <span style="text-transform: none; color: #5fb832"
-              >Support for Servlet 3.0</span
-            >
-          </h5>
+
           <h5>
             <span style="text-transform: none; color: #5fb832"
-              >asynchronous processing</span
+              >Support for asynchronous processing</span
             >
           </h5>
         </section>
 
-        <section>
-          <pre><code class="hljs java" data-trim data-line-numbers>
-@RestController
-public class PiRest {
-    @Autowired
-    private PiMultiService ps;
 
-    @GetMapping("rest/pi")
-    public Callable&lt;List&lt;Pi&gt;&gt; pi(
-            @RequestParam(name = "timeInSeconds")
-            int timeInSeconds) {
-        return () -> {
-            return ps.computeMultiPis(timeInSeconds);
-        };
-    }
-}
-            </code></pre>
-        </section>
         <section>
           <pre><code class="hljs java" data-trim data-line-numbers>
 @Configuration
@@ -472,70 +470,42 @@ public class MvcConfig {
 }
             </code></pre>
         </section>
+
         <section>
-          <h3>How it works... (1/2)</h3>
-          <ul>
-            <li>
-              The controller returns a <code class="highlight">Callable</code>.
-            </li>
-            <li>
-              Spring MVC calls
-              <code class="highlight">request.startAsync()</code> and submits
-              the <code class="highlight">Callable</code> to a
-              <code class="highlight">TaskExecutor</code> for processing in a
-              separate thread.
-            </li>
-            <li>
-              Meanwhile, the
-              <code class="highlight">DispatcherServlet</code> and all filters
-              exit the Servlet container thread, but the response remains open.
-            </li>
-          </ul>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+@RestController
+public class PiRest {
+    @Autowired
+    private PiMultiService ps;
+
+    @GetMapping("rest/pi")
+    public Callable&lt;List&lt;Pi&gt;&gt; pi(
+            @RequestParam(name = "timeInSeconds"), int timeInSeconds) {
+        return () -> {
+            return ps.computeMultiPis(timeInSeconds);
+        };
+    }
+}
+            </code></pre>
         </section>
-        <section>
-          <h3>How it works... (2/2)</h3>
-          <ul>
-            <li>
-              Eventually the <code class="highlight">Callable</code> produces a
-              result, and Spring MVC dispatches the request back to the Servlet
-              container to complete processing.
-            </li>
-            <li>
-              The <code class="highlight">DispatcherServlet</code> is invoked
-              again, and processing resumes with the asynchronously produced
-              return value from the <code class="highlight">Callable</code>.
-            </li>
-          </ul>
-          <p style="text-align: right">
-            <small
-              >Taken from
-              <a
-                href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-async-processing"
-                target="_blank"
-                >Spring MVC documentation</a
-              ></small
-            >
-          </p>
-        </section>
-        <section>
-          <h3>Conclusions</h3>
-          <p style="text-align: left">
-            Introducing Spring <code class="highlight">@Async</code> calls (as
-            in the code examples) results in almost
-            <span class="highlight">2&nbsp;x&nbsp;faster</span> execution
-            comparing to traditional synchronous processing.
-          </p>
-          <p style="text-align: left">
-            Applying the Spring's support for the Servlet 3.0 asynchronous
-            processing on top of the Spring's
-            <code class="highlight">@Async</code> support
-            <span class="highlight">does not bring performance improvement</span
-            >.
-          </p>
-          <p style="text-align: left">
-            Instead, the Servlet thread pool is not blocked, thus the
-            application is <span class="highlight">more scalable</span>.
-          </p>
+
+                <section>
+          <pre><code class="hljs java" data-trim data-line-numbers>
+@RestController
+public class PiRest {
+    @Autowired
+    private PiMultiService ps;
+
+    @GetMapping("rest/pi")
+    public DeferredResult&lt;List&lt;Pi&gt;&gt; pi(
+            @RequestParam(name = "timeInSeconds"),  int timeInSeconds) {
+        DeferredResult&lt;List&lt;Pi&gt;&gt; result = new DeferredResult&lt;&gt;();
+        result.setResult(piService.computeMultiPis(
+            timeToComputeInSeconds, numberOfProbes));
+        return result;
+    }
+}
+            </code></pre>
         </section>
 
         <section>
@@ -583,7 +553,6 @@ public class MvcConfig {
           <ul>
             <li>
               Prepare asynchronous version of
-              <span class="highlight">/mvc/pi-async</span> and
               <span class="highlight">/rest/pi-async</span> on
               <span class="highlight">Servlet</span> level.
             </li>
@@ -616,10 +585,13 @@ public class MvcConfig {
           <p>Asynchronicity in <span class="highlight">Service</span></p>
           <ul>
             <li>Enable asynchronicity</li>
-            <li>Add asynchronicity the the service</li>
-            <li>
-              Configure custom
-              <span class="highlight">Executor </span>
+            <li>Add asynchronicity the the service using:</li>
+            <ul>
+              <li><span class="highlight">@Async</span></li>
+              <li><span class="highlight">ExecutorService</span></li>
+              <li><span class="highlight">Executor</span></li>
+            </ul>
+            <li>Experiment with additional <span class="highlight">Executor</span> beans
             </li>
           </ul>
 
