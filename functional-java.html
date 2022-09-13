@@ -76,7 +76,7 @@ Collections.sort(words, (s1, s2) ->
                 <li>How come we don’t have to specify the type?</li>
                 <li>When should we specify the type?</li>
                 <ul>
-                    <li>When it helps to understand/document the code,</li>
+                    <li>When it helps to understand/document the code</li>
                     <li>When compiler reports a type inference error (then we have to specify it)</li>
                 </ul>
             </ul>
@@ -133,11 +133,33 @@ public enum Operation {
 }
 					</code></pre>
         </section>
+		<section>
+			<h2>Lambda syntax</h2>
+			<h3>Examples</h3>
+            <pre>
+			<code class="hljs java" data-trim data-line-numbers>
+// no arguments
+() -> System.out.println("Hello")	
+// one argument
+s -> System.out.println(s)
+// two arguments
+(a, b) -> a + b
+// explicit argument types
+(Integer a, Integer b) -> a + b
+// multiple statements
+(a, b) -> {
+	System.out.println(a);
+	System.out.println(b);
+	return a + b;
+}
+			</code>
+			</pre>
+		</section>
         <section>
             <h2>Summary</h2>
             <ul>
-                <li>Don’t use lambdas everywhere – they are meant to ease the work. If they are too complicated to understand use classic/iterative approach,</li>
-                <li>Use types only when necessary, let your compiler do the work,</li>
+                <li>Don’t use lambdas everywhere – they are meant to ease the work. If they are too complicated to understand use classic/iterative approach</li>
+                <li>Use types only when necessary, let your compiler do the work</li>
                 <li>Specify type for data that you want to process with lambdas – it’ll help the compiler to infer the type inside</li>
             </ul>
         </section>
@@ -156,9 +178,9 @@ map.merge(key, 1, Integer::sum);
         <section>
             <h2>Method references</h2>
             <ul>
-                <li>The more parameters are used, the more code can be removed with the usage of method references,</li>
-                <li>Lambdas, however, can be self-documenting and easier to understand even it they are longer,</li>
-                <li>If the lambda takes too much space and makes code hard to understand it can be extracted to another method which then can be used as a method reference,</li>
+                <li>The more parameters are used, the <u>more code can be shortened</u> with the usage of <b>method references</b></li>
+                <li><b>Lambdas</b>, however, can be <u>self-documenting and easier to understand</u> even it they are longer</li>
+                <li>If the <b>lambda</b> <u>takes too much space and makes code hard</u> to understand it can be extracted to another method which then can be used as a <b>method reference</b></li>
             </ul>
         </section>
         <section>
@@ -314,9 +336,9 @@ example of use of @FunctionalInterface
         <section>
             <h2>Streams</h2>
             <ul>
-                <li>Consist of two abstractions: Stream and stream’s flow,</li>
-                <li>They allow to perform multi-step, consecutive operations on data processed in stream’s flow,</li>
-                <li>Typical stream consists of a source stream, (optional) intermediate operations and final operation,</li>
+                <li>Consist of two abstractions: Stream and stream’s flow</li>
+                <li>They allow to perform multi-step, consecutive operations on data processed in stream’s flow</li>
+                <li>Typical stream consists of a source stream, (optional) intermediate operations and final operation</li>
                 <li>Lazy</li>
             </ul>
         </section>
@@ -324,7 +346,7 @@ example of use of @FunctionalInterface
             <h2>Contents of a stream</h2>
             <ul>
                 <li>beginning of a stream: <b>stream</b>, <b>parallelStream</b></li>
-                <li>intermediate functions: <b>map, filter, flatmap, limit, skip, ...</b></li>
+                <li>intermediate functions: <b>map, filter, flatMap, limit, skip, ...</b></li>
                 <li>terminal functions: <b>collect, count, max, min, findFirst, findAny, anyMatch, ...</b></li>
             </ul>
         </section>
@@ -370,17 +392,26 @@ example of use of @FunctionalInterface
         <section>
             <h2>Operators provided with Optional API</h2>
             <ul>
-                <li>filter, map, flatmap</li>
+                <li>filter, map, flatMap</li>
                 <li>orElse() vs orElseGet()</li>
             </ul>
         </section>
         <section>
-            <h2>JDK 9 changes to the Optional API</h2>
+            <h2>Optional API changes</h2>
+			<h3>JDK 9</h3>
             <ul>
+			    <li>ifPresentOrElse()</li>
                 <li>or()</li>
-                <li>ifPresentOrElse()</li>
                 <li>stream()</li>
             </ul>
+			<h3>JDK 10</h3>
+            <ul>
+                <li>orElseThrow()</li>
+            </ul>
+			<h3>JDK 11</h3>
+            <ul>
+                <li>isEmpty()</li>
+            </ul>			
         </section>
         <section>
             <p>examples of how to use optionals and common mistakes</p>
@@ -427,7 +458,7 @@ public static List&lt;Person&gt; search(List&lt;Person&gt; people, Integer age) 
         <section>
             <p>examples of how to use optionals and common mistakes</p>
             <ul>
-                <li>using flatmap + map for streamsOfOptionals</li>
+                <li>using flatMap + map for streamsOfOptionals</li>
             </ul>
             <pre><code class="hljs java" data-trim data-line-numbers>
 streamOfOptionals
@@ -436,7 +467,7 @@ streamOfOptionals
 					</code></pre>
             <pre><code class="hljs java" data-trim data-line-numbers>
 streamOfOptionals
-    .flatmap(Optional::stream)
+    .flatMap(Optional::stream)
 					</code></pre>
         </section>
         <section>
